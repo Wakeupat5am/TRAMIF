@@ -11,6 +11,6 @@ Dự đoán họ malware đã có đại diện trong dữ liệu huấn luyện
 - Future test: 01/04/2020–30/09/2020.
 
 Danh sách họ đủ điều kiện phải được chọn từ train. Không dùng nhãn future test để chọn mô hình.
-
+Ngưỡng chọn họ dự kiến theo framework §11.2 là ít nhất 50 file duy nhất, có mặt trong ít nhất 3 tháng thuộc giai đoạn train; nhiều file trong một tháng chưa đủ.
 ## Trước khi kiểm tra future test — §7
 Cố định cách tạo ảnh, mô hình, hiệu chỉnh xác suất và trọng số kết hợp.
