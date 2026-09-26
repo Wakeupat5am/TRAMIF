@@ -44,10 +44,24 @@ class TestSBSMICore(unittest.TestCase):
 
         self.assertEqual(image[0], [0, 127, 127, 0])
 
-    def test_incomplete_final_state_is_rejected(self):
-        # One byte contains 8 bits: one 6-bit state and 2 leftover bits.
-        with self.assertRaises(ValueError):
-            bytes_to_states(bytes([0xFF]), l=6)
+    def test_final_two_bits_are_retained(self):
+        # 11111111 -> 111111 | 11 -> 63, 3
+        states = bytes_to_states(bytes([0xFF]), l=6)
+
+        self.assertEqual(states, [63, 3])
+
+        image = states_to_sbsmi(states, l=6)
+        self.assertEqual(image[63][3], 255)
+
+    def test_final_four_bits_are_retained(self):
+        # 11111111 11111111 -> 111111 | 111111 | 1111
+        states = bytes_to_states(bytes([0xFF, 0xFF]), l=6)
+
+        self.assertEqual(states, [63, 63, 15])
+
+        image = states_to_sbsmi(states, l=6)
+        self.assertEqual(image[63][63], 127)
+        self.assertEqual(image[63][15], 127)
 
 
 if __name__ == "__main__":

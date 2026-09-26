@@ -1,5 +1,5 @@
 def bytes_to_states(data: bytes, l: int = 6) -> list[int]:
-    """Read complete l-bit states, most significant bit first."""
+    """Read l-bit states MSB-first, retaining the final partial block."""
 
     if not isinstance(l, int) or not 1 <= l <= 8:
         raise ValueError("l must be an integer between 1 and 8.")
@@ -10,10 +10,11 @@ def bytes_to_states(data: bytes, l: int = 6) -> list[int]:
     mask = (1 << l) - 1
 
     for byte in data:
-        # Append eight new bits after any bits left from the previous byte.
+        # Append eight new bits after any remaining bits.
         buffer = (buffer << 8) | byte
         bits_available += 8
 
+        # Read every complete l-bit state currently available.
         while bits_available >= l:
             bits_available -= l
             state = (buffer >> bits_available) & mask
@@ -23,12 +24,12 @@ def bytes_to_states(data: bytes, l: int = 6) -> list[int]:
         buffer &= (1 << bits_available) - 1
 
     if bits_available:
-        raise ValueError(
-            f"{bits_available} trailing bits remain; "
-            "the incomplete-state policy has not been configured."
-        )
+        # Retain the final partial block as an integer.
+        # Missing higher-order bits are implicitly zero.
+        states.append(buffer)
 
     return states
+
 
 def states_to_sbsmi(states: list[int], l: int = 6) -> list[list[int]]:
     """Convert a sequence of l-bit states into grayscale pixel values."""
@@ -44,7 +45,9 @@ def states_to_sbsmi(states: list[int], l: int = 6) -> list[list[int]]:
 
     for state in states:
         if not isinstance(state, int) or not 0 <= state < size:
-            raise ValueError(f"Each state must be an integer in [0, {size - 1}].")
+            raise ValueError(
+                f"Each state must be an integer in [0, {size - 1}]."
+            )
 
     # Each row is a separate list.
     counts = [[0 for _ in range(size)] for _ in range(size)]
@@ -71,17 +74,25 @@ def states_to_sbsmi(states: list[int], l: int = 6) -> list[list[int]]:
 
 
 if __name__ == "__main__":
-    example_bytes = bytes([0x00, 0x10, 0x83])
+    examples = [
+        ("Complete blocks", bytes([0x00, 0x10, 0x83])),
+        ("Final block has 2 bits", bytes([0xFF])),
+        ("Final block has 4 bits", bytes([0xFF, 0xFF])),
+    ]
 
-    states = bytes_to_states(example_bytes, l=6)
-    image = states_to_sbsmi(states, l=6)
+    for name, data in examples:
+        states = bytes_to_states(data, l=6)
+        image = states_to_sbsmi(states, l=6)
 
-    print("Bytes (hex):", example_bytes.hex(" "))
-    print("States:", states)
-    print(f"Image shape: {len(image)} x {len(image[0])}")
+        print(name)
+        print("Bytes (hex):", data.hex(" "))
+        print("States:", states)
+        print(f"Image shape: {len(image)} x {len(image[0])}")
+        print("Nonzero pixels:")
 
-    print("Nonzero pixels:")
-    for previous, row in enumerate(image):
-        for current, value in enumerate(row):
-            if value != 0:
-                print(f"({previous}, {current}): {value}")
+        for previous, row in enumerate(image):
+            for current, value in enumerate(row):
+                if value != 0:
+                    print(f"({previous}, {current}): {value}")
+
+        print()

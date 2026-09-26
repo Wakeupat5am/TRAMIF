@@ -26,46 +26,53 @@ Kết quả nghiên cứu phải ghi rõ đầu vào là binary đã disarm.
 
 ## SBSMI — quy tắc đã xác nhận
 
-Nguồn: bài báo SBSMI, Section 4, công thức (1)–(2), trang 5–6.
+Nguồn: bài báo SBSMI, Section 4.1, trang 5–6, công thức (1)–(2).
 
-Dãy bit được chia thành các khối dài `l` bit. Với hai khối liên tiếp
-`m` và `n`, `f(m,n)` là số lần quan sát chuyển tiếp `m → n`.
-Xác suất chuyển tiếp là `P(m,n) = f(m,n) / sum_k f(m,k)`.
-Các xác suất tạo thành ma trận `2^l × 2^l`.
-Mỗi ô được chuyển thành pixel 8-bit bằng `floor(P(m,n) × 255)`.
+Dãy bit được chia thành các khối không chồng lấp, dài l bit,
+bắt đầu từ bit đầu tiên.
 
-Bài báo minh họa `l = 6`, tương ứng ảnh 64 × 64.
+Nếu khối cuối chưa đủ l bit, vẫn chuyển các bit còn lại thành
+số nguyên; các bit thiếu ở phía trọng số cao được coi là 0.
+Ví dụ, với l = 6, khối cuối `11` có giá trị 3, tương đương
+`000011`; không chuyển thành `110000`.
 
-Algorithm 1 mô tả việc đọc liên tiếp các khối bit, đếm chuyển tiếp,
-chuẩn hóa theo hàng và chuyển xác suất thành mức xám. Phần thuật toán
-đã đối chiếu chưa nêu rõ cách ReadBits xử lý khối cuối thiếu bit
-hoặc cách chuẩn hóa một hàng có tổng số đếm bằng 0.
+Với hai trạng thái liên tiếp m và n, f(m,n) là số lần quan sát
+chuyển tiếp m → n. Xác suất được chuẩn hóa theo từng hàng:
 
-### Quy ước trong bản triển khai hiện tại
+P(m,n) = f(m,n) / sum_k f(m,k)
 
-Các mục dưới đây mô tả code TRAMIF, chưa được coi là những chi tiết
-đã xác nhận đầy đủ từ bài báo:
+Ma trận có kích thước 2^l × 2^l.
+Mỗi ô được chuyển thành pixel bằng floor(P(m,n) × 255).
+Hàng có tổng số đếm bằng 0 được giữ bằng 0; framework §4.3
+cũng quy định rõ hàng không có lượt chuyển tiếp là hàng 0.
 
-- Đọc bit từ bit có trọng số cao đến bit có trọng số thấp trong mỗi
-  byte (MSB-first).
-- Chia dãy bit liên tục thành các khối không chồng lấp. Phần bit
-  còn lại giữa hai byte được giữ để ghép với byte tiếp theo.
-- Hàm mặc định dùng l = 6; tham số thí nghiệm vẫn cần được chốt.
-- Hàng không có lượt chuyển tiếp được biểu diễn bằng các pixel 0.
-- Nếu cuối toàn bộ dữ liệu còn thiếu bit để tạo một khối, hàm hiện
-  báo ValueError. Đây là hành vi tạm thời, chưa dùng để xử lý toàn
-  bộ binary thật.
+Bài báo minh họa l = 6, tương ứng ảnh 64 × 64.
+Framework TRAMIF §4.3 chọn trạng thái 6 bit cho thiết kế ban đầu.
+
+### Chi tiết triển khai hiện tại
+
+- Đọc bit theo thứ tự MSB-first trong mỗi byte. Thứ tự này đã
+  được kiểm tra bằng ví dụ tính tay; phần văn bản đã đối chiếu
+  chưa nêu rõ thứ tự bit trong từng byte.
+- Giữ phần bit dư giữa các byte để ghép với byte tiếp theo.
+- Giữ khối cuối chưa đủ bit bằng giá trị số nguyên của nó.
+- Hàm mặc định dùng l = 6 và hỗ trợ l từ 1 đến 8.
+  Giới hạn này là lựa chọn triển khai.
 - Chuỗi có ít hơn hai trạng thái bị từ chối vì không có chuyển tiếp.
+  Đây là quy tắc đầu vào của code hiện tại.
+- Các trạng thái được lưu trong danh sách; chưa tối ưu bộ nhớ
+  để xử lý binary lớn.
 
 ### Kiểm chứng đã hoàn thành
 
-Năm test tự động đã vượt qua, kiểm tra:
+Sáu test tự động đã vượt qua:
 
 1. Đọc trạng thái xuyên qua ranh giới byte.
 2. Thứ tự đọc MSB-first.
 3. Chiều chuyển tiếp và chuẩn hóa theo hàng.
 4. Làm tròn xuống khi chuyển xác suất thành mức xám.
-5. Báo lỗi khi khối cuối chưa đủ bit.
+5. Giữ và sử dụng khối cuối còn 2 bit.
+6. Giữ và sử dụng khối cuối còn 4 bit.
 
 Các test xác nhận kết quả trên dữ liệu nhỏ đã tính tay.
 Chưa kiểm chứng toàn bộ quy trình đọc binary thật và xuất ảnh,
