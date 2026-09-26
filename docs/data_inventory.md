@@ -32,3 +32,16 @@ Thí nghiệm tạo ảnh dự kiến dùng bytes của các binary đã disarm 
 đặc điểm này khi báo cáo kết quả. Chưa khôi phục hoặc lưu toàn bộ binary gốc.
 Trước khi tải ZIP 67,92 GB, cần lập danh sách SHA cần dùng và kiểm tra cách
 các file được đặt tên trong ZIP để chỉ giải nén phần cần thiết.
+---------------------------------------------------------------------------------
+## Manifest train và validation
+
+Chạy `python scripts/build_train_val_manifest.py` từ thư mục gốc của dự án
+để tạo `data/manifests/train_validation_manifest.csv`.
+
+Manifest lấy các SHA thuộc 51 họ đã cố định từ train:
+18.061 SHA train và 8.263 SHA validation, tổng cộng 26.324 SHA duy nhất.
+Mỗi dòng ghi SHA, split, timestamp và family. Script báo lỗi nếu một SHA
+xuất hiện hai lần trong manifest.
+
+Manifest nằm trong `data/` và không được đưa lên GitHub; script tạo manifest
+được lưu trong Git. Bước này chưa dùng nhãn future test và chưa tải binary.
