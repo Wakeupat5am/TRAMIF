@@ -21,3 +21,14 @@ Ngày 25/09/2026, ổ đĩa dự kiến dùng cho dữ liệu còn khoảng 300 
 - Ngày kiểm tra: 25/09/2026
 
 Mã này nhận diện bản CSV dùng trong dự án; nó khác với cột `sha`, vốn nhận diện từng mẫu trong bảng.
+
+## Diễn giải nhãn và binary
+
+Theo README BODMAS, trường `family` trống biểu thị mẫu benign.
+Trong giai đoạn train có 26.523 dòng benign và 20.333 dòng có nhãn họ malware;
+validation có 7.280 dòng benign và 9.259 dòng có nhãn họ.
+
+Thí nghiệm tạo ảnh dự kiến dùng bytes của các binary đã disarm và phải ghi rõ
+đặc điểm này khi báo cáo kết quả. Chưa khôi phục hoặc lưu toàn bộ binary gốc.
+Trước khi tải ZIP 67,92 GB, cần lập danh sách SHA cần dùng và kiểm tra cách
+các file được đặt tên trong ZIP để chỉ giải nén phần cần thiết.
