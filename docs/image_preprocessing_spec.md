@@ -60,20 +60,28 @@ Framework TRAMIF §4.3 chọn trạng thái 6 bit cho thiết kế ban đầu.
   Giới hạn này là lựa chọn triển khai.
 - Chuỗi có ít hơn hai trạng thái bị từ chối vì không có chuyển tiếp.
   Đây là quy tắc đầu vào của code hiện tại.
-- Các trạng thái được lưu trong danh sách; chưa tối ưu bộ nhớ
-  để xử lý binary lớn.
+- `scripts/sbsmi_core.py` giữ phiên bản đọc toàn bộ trạng thái
+  để làm đối chứng trên dữ liệu nhỏ.
+- `scripts/sbsmi_stream.py` đọc file theo từng khối, mặc định
+  65.536 byte, và đếm chuyển tiếp ngay khi đọc.
+- Bit dư và trạng thái trước được giữ xuyên qua ranh giới khối.
+  Nhóm cuối thiếu bit chỉ được xử lý khi hết toàn bộ file.
 
 ### Kiểm chứng đã hoàn thành
 
-Sáu test tự động đã vượt qua:
+Bộ kiểm tra hiện có 11 test, tất cả đã vượt qua:
 
-1. Đọc trạng thái xuyên qua ranh giới byte.
-2. Thứ tự đọc MSB-first.
-3. Chiều chuyển tiếp và chuẩn hóa theo hàng.
-4. Làm tròn xuống khi chuyển xác suất thành mức xám.
-5. Giữ và sử dụng khối cuối còn 2 bit.
-6. Giữ và sử dụng khối cuối còn 4 bit.
+- Sáu test kiểm tra phần lõi: thứ tự bit, đọc xuyên ranh giới byte,
+  đếm chuyển tiếp, chuẩn hóa, làm tròn và giữ nhóm bit cuối.
+- Năm test kiểm tra bộ đọc từng khối: đối chiếu với bản tham chiếu
+  ở nhiều kích thước khối và độ dài trạng thái, đối chiếu phép tính
+  tay, từ chối đầu vào không có chuyển tiếp và kích thước khối bằng 0.
 
-Các test xác nhận kết quả trên dữ liệu nhỏ đã tính tay.
-Chưa kiểm chứng toàn bộ quy trình đọc binary thật và xuất ảnh,
-hoặc mức sử dụng bộ nhớ khi xử lý file lớn.
+Script `scripts/export_sbsmi_demo.py` đã đọc file mẫu hai byte
+FF FF bằng bộ đọc từng khối và xuất ảnh PNG 64 × 64, chế độ L
+(grayscale 8-bit). Đọc lại PNG cho kết quả khớp toàn bộ 4.096 pixel
+với ma trận trước khi lưu.
+
+Các kiểm tra dùng dữ liệu mô phỏng.
+Chưa kiểm chứng trên binary BODMAS thật hoặc đo thời gian và
+bộ nhớ trên file lớn.

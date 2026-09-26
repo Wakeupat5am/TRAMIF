@@ -2,15 +2,20 @@ from pathlib import Path
 
 from PIL import Image
 
-from scripts.sbsmi_core import bytes_to_states, states_to_sbsmi
+from scripts.sbsmi_stream import file_to_sbsmi
 
 
 def main():
-    # Synthetic input: 111111 | 111111 | 1111
-    sample_bytes = bytes([0xFF, 0xFF])
+    project_root = Path(__file__).resolve().parents[1]
+    input_path = project_root / "data" / "samples" / "sbsmi_toy.bin"
 
-    states = bytes_to_states(sample_bytes, l=6)
-    matrix = states_to_sbsmi(states, l=6)
+    # Read the file in chunks and directly count transitions.
+    chunk_size = 65536
+    matrix = file_to_sbsmi(
+        input_path,
+        l=6,
+        chunk_size=chunk_size,
+    )
 
     height = len(matrix)
     width = len(matrix[0])
@@ -22,7 +27,6 @@ def main():
         for value in row
     )
 
-    project_root = Path(__file__).resolve().parents[1]
     output_path = (
         project_root
         / "data"
@@ -32,11 +36,10 @@ def main():
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # L means one grayscale channel, 8 bits per pixel.
     with Image.frombytes("L", (width, height), pixel_bytes) as image:
         image.save(output_path, format="PNG")
 
-    # Read the saved file and verify the decoded pixels.
+    # Verify every decoded pixel after saving.
     with Image.open(output_path) as saved:
         if saved.format != "PNG":
             raise RuntimeError("Unexpected image format.")
@@ -47,7 +50,9 @@ def main():
         if saved.tobytes() != pixel_bytes:
             raise RuntimeError("Pixel values changed after saving.")
 
-        print("States:", states)
+        print("Input file:", input_path.name)
+        print("Input bytes:", input_path.stat().st_size)
+        print("Chunk size:", chunk_size)
         print("Image size:", saved.size)
         print("Image mode:", saved.mode)
         print("Pixel (x=15, y=63):", saved.getpixel((15, 63)))
