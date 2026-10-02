@@ -45,3 +45,26 @@ xuất hiện hai lần trong manifest.
 
 Manifest nằm trong `data/` và không được đưa lên GitHub; script tạo manifest
 được lưu trong Git. Bước này chưa dùng nhãn future test và chưa tải binary.
+
+## Trạng thái sau giải nén và pilot
+
+- Binary disarmed hiện nằm trong `data/raw/altered`.
+- `bodmas.npz` được giữ lại; ZIP đặc trưng bên ngoài đã xóa.
+- ZIP binary gốc đã xóa sau khi người thực hiện quyết định.
+- Đã kiểm tra đủ 26.324 mẫu train/validation trong manifest:
+  18.061 train và 8.263 validation; không thiếu file, không sai
+  kích thước so với ZIP index đã lưu.
+- Kiểm tra tên và kích thước không xác nhận toàn vẹn nội dung.
+  Chưa kiểm tra CRC toàn bộ dataset, kể cả phần future test.
+- Một mẫu train thuộc họ autoit đã vượt qua kiểm tra CRC và
+  tạo thành công ba ảnh SBSMI, raw-byte, local entropy.
+- Ba báo cáo pilot ghi cùng SHA-256 nội dung disarm và đều
+  có kết quả kiểm tra pixel sau lưu là PASS.
+- Chi tiết cấu hình và bằng chứng nằm trong
+  `docs/image_preprocessing_spec.md`.
+
+Hai script `inspect_bodmas_zip.py` và `build_zip_index.py`
+cần ZIP binary gốc nếu chạy lại. Index đã tạo vẫn được giữ tại
+`data/manifests/train_validation_zip_index.csv`.
+
+Các pilot hiện đọc trực tiếp từ `data/raw/altered`.
