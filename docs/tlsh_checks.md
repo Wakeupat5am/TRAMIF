@@ -66,3 +66,29 @@ kết quả validation của baseline SBSMI. Phải công bố trình tự này;
 không mô tả đây là quy tắc đã chốt trước khi xem validation.
 
 Future test chưa được sử dụng trong các bước kiểm tra TLSH này.
+
+## Bảng TLSH toàn bộ train
+
+Ngày hoàn tất: 06/10/2026.
+
+- Tổng số mẫu train: 18.061.
+- Lần chạy toàn bộ tạo 18.041 bản ghi và dùng lại 20 bản ghi.
+- TLSH hợp lệ: 18.061.
+- TNULL: 0.
+- Lỗi: 0.
+- Complete train inventory: True.
+
+Khi tạo bản ghi, script kiểm tra kích thước và CRC với ZIP index,
+đồng thời đối chiếu SHA-256 của bytes disarmed với báo cáo SBSMI.
+Bản ghi CACHED được dùng lại; bytes không được băm lại trong lần đó.
+
+Bảng kết quả cục bộ:
+data/derived/train_tlsh_v1/train_tlsh.csv
+
+Cấu hình và tổng kết:
+data/derived/train_tlsh_v1/config.json
+data/derived/train_tlsh_v1/summary.json
+
+Chưa so sánh độ tương đồng giữa các mẫu, chưa chọn ngưỡng,
+chưa nhóm hoặc loại mẫu. Hash hợp lệ không chứng minh rằng
+dữ liệu không có mẫu gần trùng.
