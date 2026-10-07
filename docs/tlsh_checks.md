@@ -137,3 +137,42 @@ tạo file. Không đổi nhãn và không loại mẫu.
 
 Báo cáo:
 data/derived/mixed_tlsh_pair/20261007_071521_730105/report.json
+## Khảo sát hàng xóm TLSH gần nhất trong toàn bộ train
+
+Ngày hoàn tất: 07/10/2026.
+
+Mỗi mẫu được so sánh với 18.060 mẫu train còn lại, loại chính nó.
+Dùng phép TLSH diff chuẩn, có thành phần độ dài.
+Khi nhiều mẫu đồng hạng gần nhất, thống kê nhãn xét tất cả
+các mẫu đồng hạng.
+
+- Số mẫu truy vấn: 18.061.
+- Khoảng cách gần nhất nhỏ nhất / trung vị / lớn nhất: 0 / 6 / 264.
+- 2.911 mẫu có ít nhất một hàng xóm khác nhãn ở khoảng cách
+  nhỏ nhất, chưa giới hạn khoảng cách.
+- Complete train audit: True.
+
+| Khoảng cách gần nhất tối đa | Số mẫu truy vấn | Có hàng xóm khác nhãn ở khoảng cách nhỏ nhất |
+| ---: | ---: | ---: |
+| 0 | 180 | 4 |
+| 10 | 10.154 | 1.288 |
+| 20 | 11.674 | 1.487 |
+| 30 | 12.621 | 1.625 |
+| 50 | 13.913 | 1.844 |
+
+Các mức là cộng dồn. Đây là số mẫu truy vấn, không phải số cặp
+hoặc số nhóm. Cột cuối không thống kê tất cả các cặp khác nhãn
+nằm trong mỗi mức khoảng cách.
+
+180 mẫu ở khoảng cách 0 khớp kết quả kiểm tra nhóm cùng TLSH.
+Bốn mẫu có hàng xóm khác nhãn ở khoảng cách 0 thuộc hai nhóm
+G000007 và G000038 đã được đối chiếu bytes.
+
+Chưa xác lập ngưỡng near-duplicate hoặc quy tắc gom nhóm.
+Không suy ra nhãn sai chỉ từ khoảng cách TLSH.
+Không đổi nhãn và không loại mẫu.
+
+Kết quả cục bộ:
+data/derived/train_tlsh_neighbors_v1/nearest_neighbors.csv
+data/derived/train_tlsh_neighbors_v1/summary.json
+data/derived/train_tlsh_neighbors_v1/config.json
