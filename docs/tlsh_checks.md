@@ -92,3 +92,48 @@ data/derived/train_tlsh_v1/summary.json
 Chưa so sánh độ tương đồng giữa các mẫu, chưa chọn ngưỡng,
 chưa nhóm hoặc loại mẫu. Hash hợp lệ không chứng minh rằng
 dữ liệu không có mẫu gần trùng.
+
+## Đối chiếu bytes nhóm G000007
+
+Nhóm cùng TLSH chứa hai mẫu:
+- wacatac, quan sát ngày 15/09/2019.
+- autorun, quan sát ngày 20/10/2019.
+
+Cả hai có kích thước 382.368 byte.
+SHA-256 nội dung đọc lại khớp báo cáo đã lưu.
+
+So sánh tại cùng vị trí:
+- 385 vị trí có byte khác nhau.
+- Tỷ lệ byte bằng nhau: 99,899312%.
+- 37 vùng khác biệt liên tiếp.
+
+Kết quả hỗ trợ việc xem đây là ứng viên gần trùng về bytes
+có nhãn họ không thống nhất. Chưa xác định nhãn nào đúng,
+chưa kết luận tương đương hành vi, chưa đổi nhãn hoặc loại mẫu.
+
+Tỷ lệ giống nhau của cặp này là kết quả quan sát;
+không được coi là ngưỡng loại mẫu đã được xác lập.
+
+## Đối chiếu bytes nhóm G000038
+
+Ngày kiểm tra: 07/10/2026.
+
+- small: 9.600.947 byte.
+- sillyp2p: 10.177.127 byte.
+- SHA-256 nội dung của cả hai khớp giá trị đã lưu.
+- Toàn bộ file small khớp chính xác phần đầu file sillyp2p.
+- File sillyp2p có thêm 576.180 byte ở cuối.
+
+Quan hệ tiền tố được kiểm tra trên toàn bộ bytes của file ngắn,
+không suy ra từ việc lấy mẫu các đoạn.
+
+Trong 64 đoạn mẫu dài 4.096 byte, 63 đoạn lặp trong file nguồn;
+một đoạn khớp duy nhất ở cùng vị trí. Các đoạn lặp không được
+dùng để suy luận vị trí dịch chuyển.
+
+Kết quả xác nhận quan hệ bao chứa bytes giữa hai mẫu khác nhãn.
+Chưa kết luận tương đương hành vi, nhãn nào đúng hoặc lịch sử
+tạo file. Không đổi nhãn và không loại mẫu.
+
+Báo cáo:
+data/derived/mixed_tlsh_pair/20261007_071521_730105/report.json
