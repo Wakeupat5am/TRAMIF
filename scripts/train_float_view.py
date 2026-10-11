@@ -14,7 +14,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from models.compact_view_net import CompactViewNet
-from scripts.float_image_dataset import FloatImageDataset
+from scripts.historical_policy_dataset import HistoricalPolicyDataset
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,18 +34,15 @@ def save_json(path, value):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Train-only engineering run for a compact image branch."
+        description="Train a compact branch with the historical policy."
     )
     parser.add_argument(
-        "--view",
-        choices=("raw-byte", "entropy"),
-        required=True,
+        "--view", choices=("raw-byte", "entropy"), required=True
     )
-    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--policy-dir", required=True)
+    parser.add_argument("--epochs", type=int, choices=(1, 100), default=1)
     args = parser.parse_args()
 
-    if args.epochs < 1:
-        raise ValueError("--epochs must be positive.")
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is unavailable.")
 
@@ -58,21 +55,24 @@ def main():
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
     generator = torch.Generator()
     generator.manual_seed(seed)
 
-    dataset = FloatImageDataset(
-        ROOT,
+    dataset = HistoricalPolicyDataset(
+        project_root=ROOT,
+        policy_dir=args.policy_dir,
         view=args.view,
         split="train",
+        threshold=0,
     )
 
     if len(dataset) != 18061:
         raise ValueError("Expected 18,061 training samples.")
+    if dataset.samples != dataset.base.samples:
+        raise ValueError("Primary policy unexpectedly changed training rows.")
     if len(dataset) % batch_size == 1:
         raise ValueError("The final batch would contain only one sample.")
 
@@ -88,7 +88,6 @@ def main():
 
     device = torch.device("cuda")
     model = CompactViewNet(num_classes=dataset.num_classes).to(device)
-
     parameter_count = sum(p.numel() for p in model.parameters())
     if parameter_count != 59059:
         raise RuntimeError("Unexpected compact model parameter count.")
@@ -111,11 +110,23 @@ def main():
         ROOT / "models/compact_view_net.py",
         ROOT / "models/malsbslcnet.py",
         ROOT / "scripts/float_image_dataset.py",
+        ROOT / "scripts/historical_policy_dataset.py",
     ]
 
+    purpose = (
+        "fixed 100-epoch development baseline"
+        if args.epochs == 100
+        else "train-only engineering run"
+    )
+
     config = {
-        "purpose": "train-only engineering run",
-        "near_duplicate_policy_status": "not finalized",
+        "purpose": purpose,
+        "near_duplicate_policy_status": (
+            "historical policy applied; future-period application pending"
+        ),
+        "policy_dir": str(dataset.policy_dir),
+        "train_selection": dataset.selection,
+        "train_selection_sha256": dataset.selection_id,
         "view": args.view,
         "model": "CompactViewNet",
         "feature_dim": model.feature_dim,
@@ -123,7 +134,7 @@ def main():
         "num_classes": dataset.num_classes,
         "class_to_idx": dataset.class_to_idx,
         "train_samples": len(dataset),
-        "dataset_config_sha256": dataset.config_id,
+        "dataset_config_sha256": dataset.preprocessing_config_id,
         "input_shape": [1, 64, 64],
         "input_normalization": "already normalized; no additional scaling",
         "initialization": "fresh random initialization",
@@ -141,8 +152,17 @@ def main():
         "augmentation": None,
         "mixed_precision": False,
         "checkpoint_rule": "save at each completed epoch",
+        "evaluation_checkpoint_epoch": (
+            100 if args.epochs == 100 else None
+        ),
+        "checkpoint_selection": (
+            "epoch 100 fixed before this run; no metric-based selection"
+            if args.epochs == 100
+            else "engineering check only"
+        ),
         "resume_supported": False,
-        "validation_used": False,
+        "validation_used_for_weight_updates": False,
+        "validation_evaluated_during_training": False,
         "future_test_used": False,
         "python_version": sys.version,
         "torch_version": str(torch.__version__),
@@ -158,10 +178,13 @@ def main():
     }
     save_json(output_dir / "config.json", config)
 
-    print("Purpose:", config["purpose"])
+    print("Purpose:", purpose)
     print("View:", args.view)
     print("GPU:", config["gpu"])
     print("Parameters:", parameter_count)
+    print("Policy threshold:", dataset.threshold)
+    print("Training rows unchanged: PASS")
+    print("Train selection SHA-256:", dataset.selection_id)
     print("Train samples:", len(dataset))
     print("Batch size:", batch_size)
     print("Batches per epoch:", len(loader))
@@ -170,30 +193,27 @@ def main():
     print("Starting training...", flush=True)
 
     history_path = output_dir / "history.csv"
+    fields = [
+        "epoch",
+        "samples_seen",
+        "online_train_loss",
+        "online_train_accuracy",
+        "epoch_seconds",
+        "peak_gpu_allocated_mib",
+        "checkpoint",
+        "checkpoint_sha256",
+    ]
 
-    with history_path.open("w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(
-            file,
-            fieldnames=[
-                "epoch",
-                "samples_seen",
-                "online_train_loss",
-                "online_train_accuracy",
-                "epoch_seconds",
-                "peak_gpu_allocated_mib",
-                "checkpoint",
-                "checkpoint_sha256",
-            ],
-        )
+    with history_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
-        file.flush()
+        handle.flush()
 
         for epoch in range(1, args.epochs + 1):
             model.train()
             classifier_before = (
                 model.classifier.weight.detach().cpu().clone()
             )
-
             torch.cuda.synchronize(device)
             torch.cuda.reset_peak_memory_stats(device)
             started = perf_counter()
@@ -207,7 +227,6 @@ def main():
                 labels = labels.to(device, non_blocking=True)
 
                 optimizer.zero_grad(set_to_none=True)
-
                 logits = model(images)
                 loss = criterion(logits, labels)
 
@@ -217,8 +236,6 @@ def main():
                     )
 
                 loss.backward()
-
-                # Reject non-finite gradients without imposing clipping.
                 torch.nn.utils.clip_grad_norm_(
                     model.parameters(),
                     max_norm=float("inf"),
@@ -250,7 +267,6 @@ def main():
 
             if seen != len(dataset):
                 raise RuntimeError("Not all training samples were processed.")
-
             if torch.equal(
                 classifier_before,
                 model.classifier.weight.detach().cpu(),
@@ -263,7 +279,6 @@ def main():
 
             checkpoint_path = output_dir / f"epoch_{epoch:03d}.pt"
             temporary_path = checkpoint_path.with_suffix(".pt.tmp")
-
             checkpoint = {
                 "epoch": epoch,
                 "config": config,
@@ -282,13 +297,11 @@ def main():
                 map_location="cpu",
                 weights_only=True,
             )
-
             if saved["epoch"] != epoch or saved["config"] != config:
                 raise RuntimeError("Checkpoint metadata mismatch.")
 
             current_state = model.state_dict()
             saved_state = saved["model_state_dict"]
-
             if set(current_state) != set(saved_state):
                 raise RuntimeError("Checkpoint parameter names differ.")
 
@@ -308,7 +321,7 @@ def main():
                 "checkpoint": checkpoint_path.name,
                 "checkpoint_sha256": file_sha256(checkpoint_path),
             })
-            file.flush()
+            handle.flush()
 
             print(f"Epoch finished in {elapsed:.1f}s")
             print("Samples processed:", seen)
