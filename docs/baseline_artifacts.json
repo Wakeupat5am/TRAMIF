@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "scope": "Historical artifact hash/binding checks only; metrics copied, not recomputed. Not a backup.",
+  "entries": [
+    {
+      "view": "sbsmi",
+      "checkpoint": "data/derived/sbsmi_training/20261005_105325_352508/epoch_100.pt",
+      "checkpoint_sha256": "0c7d76ec3e077e5f88dd6d455b14a041ee2d701a2dc170d5718928695bcf2c4d",
+      "temperature_file": "data/derived/sbsmi_training/20261005_105325_352508/temperature_filtered_20261011_021110_098860/temperature.json",
+      "temperature_file_sha256": "e7649e848075600eb2d0d83388932fe4823c214e981bced86dcae8b453d0823a",
+      "temperature": 2.5202034447760657,
+      "evaluations": [
+        {
+          "month": "2020-02",
+          "samples": 3799,
+          "report": "data/derived/sbsmi_training/20261005_105325_352508/validation_filtered_2020-02_20261011_020303_740321/report.json",
+          "report_sha256": "b763040c884f7a33caf41931202f1754013874b8e9d9f4565ba19e050690bb98",
+          "predictions_sha256": "038afc41135f3adb61ed4c60b1aa7ef6ec479c8e00b522b029530cd8bfad79c9",
+          "accuracy": 0.8107396683337721,
+          "macro_f1_supported": 0.7144375894138421
+        },
+        {
+          "month": "2020-03",
+          "samples": 4332,
+          "report": "data/derived/sbsmi_training/20261005_105325_352508/validation_filtered_2020-03_20261011_020334_521802/report.json",
+          "report_sha256": "81e3ad8a74eed9f7b35e355ff14dbb22ccb20e00c2103a5f0d7c39b0ff83cd53",
+          "predictions_sha256": "001db6603c47e08f9fb035e325cad1aa4e297fcbb24c1fbf0466b42bcb9b6e76",
+          "accuracy": 0.7026777469990766,
+          "macro_f1_supported": 0.7277708593011415
+        }
+      ]
+    },
+    {
+      "view": "raw-byte",
+      "checkpoint": "data/derived/float_view_training/raw-byte/20261009_145102_408184/epoch_100.pt",
+      "checkpoint_sha256": "893eb01789858abab523a3909d40a403328f27d17901dc76a9c94bfbd551341f",
+      "temperature_file": "data/derived/float_view_training/raw-byte/20261009_145102_408184/temperature_filtered_20261011_021130_959168/temperature.json",
+      "temperature_file_sha256": "43fdf97ea3073f84e24c5555a34ccb5a46feb5413e14f68ee599d69fbb108291",
+      "temperature": 2.211872879462139,
+      "evaluations": [
+        {
+          "month": "2020-02",
+          "samples": 3799,
+          "report": "data/derived/float_view_training/raw-byte/20261009_145102_408184/validation_filtered_2020-02_20261011_015920_079252/report.json",
+          "report_sha256": "fb9227717248ce680123fef665c1cd72ea1d8d2e710e35e971e7cbe29d88cbc7",
+          "predictions_sha256": "5e39f55b60ccb30173797469feca75cc97fc961a1716792231114e66da296d4e",
+          "accuracy": 0.7465122400631745,
+          "macro_f1_supported": 0.6526914435870735
+        },
+        {
+          "month": "2020-03",
+          "samples": 4332,
+          "report": "data/derived/float_view_training/raw-byte/20261009_145102_408184/validation_filtered_2020-03_20261011_015954_174113/report.json",
+          "report_sha256": "f481718d8abec19860bd0fc5c9d64d51aef4c958aae5c718d78a43834c43bba7",
+          "predictions_sha256": "c27094cacac125c46682be9de301ec3eb58f2e3fdb5f5ca341b0935a052935f2",
+          "accuracy": 0.6731301939058172,
+          "macro_f1_supported": 0.65051535616484
+        }
+      ]
+    },
+    {
+      "view": "entropy",
+      "checkpoint": "data/derived/float_view_training/entropy/20261011_001259_203865/epoch_100.pt",
+      "checkpoint_sha256": "1fc07d49f8dbc0f83cb8e88e1e987cbb070de707713f1f8d941f9e1626771cfa",
+      "temperature_file": "data/derived/float_view_training/entropy/20261011_001259_203865/temperature_filtered_20261011_021150_219503/temperature.json",
+      "temperature_file_sha256": "97d42c12ea6f9ce679b9de41db3255f02dd72d45ceed3fb9c39259aa52dc31ad",
+      "temperature": 1.9354895383696529,
+      "evaluations": [
+        {
+          "month": "2020-02",
+          "samples": 3799,
+          "report": "data/derived/float_view_training/entropy/20261011_001259_203865/validation_filtered_2020-02_20261011_015822_322671/report.json",
+          "report_sha256": "4707696d84275d15d0190af8263e932f560cdfc23339a40938e7ac2602e28e2a",
+          "predictions_sha256": "08f11d586564e700c505208ed2f95e51eac7c0a40fa15372d057f2d5467fd9f4",
+          "accuracy": 0.746775467228218,
+          "macro_f1_supported": 0.6459954539512214
+        },
+        {
+          "month": "2020-03",
+          "samples": 4332,
+          "report": "data/derived/float_view_training/entropy/20261011_001259_203865/validation_filtered_2020-03_20261011_015854_711442/report.json",
+          "report_sha256": "82b3d34ca8266d1c2ff36c580d650e264a9e29f5ac9327cc966ead207918af8f",
+          "predictions_sha256": "c4f60451e98fb8ce891bed3125d13b8de73392920e8cd47f3cee3ad2875ae728",
+          "accuracy": 0.6327331486611265,
+          "macro_f1_supported": 0.6593030115173516
+        }
+      ]
+    }
+  ]
+}
